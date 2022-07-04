@@ -1,0 +1,19 @@
+server:
+  port: 8082
+
+spring:
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    database: postgresql
+    database-platform: org.hibernate.dialect.PostgreSQL10Dialect
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://localhost:5433/processed_requests
+    username: postgres
+    password: Andy1964
+
+  kafka:
+    producer:
+      bootstrap-servers: localhost:29092
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer

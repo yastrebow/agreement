@@ -1,0 +1,73 @@
+openapi: 3.0.0
+info:
+  title: 'MS Agreement'
+  description: 'Get processed request from the DB "processed_requests", check status and create agreement or drop exception'
+  contact:
+    name: 'Iastrebov Andrei'
+    url: 'https://github.com/yastrebow'
+  version: 1.0-version
+servers:
+  - url: 'http://localhost:8082/'
+    description: 'localhost'
+paths:
+  /generate-agreement:
+    get:
+      tags:
+        - agreement
+      summary: Get processed request from DB "processed_requests"
+      operationId: agreement
+      description: Get processed request from DB "processed_requests" for agreement creating
+      parameters:
+        - name: requestId
+          in: query
+          description: The id of processed requests to get
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProcessedRequestDTO'
+        '404':
+          description: No applications present
+
+components:
+  schemas:
+    ProcessedRequestDTO:
+      description: Info about processed requests
+      title: Response
+      type: object
+      properties:
+        id:
+          type: integer
+          description: Request id
+          format: int64
+          example: 123456789
+        name:
+          type: string
+          description: name of author of credit-request
+          example: Сидоров Иван Кузьмич
+        birth_date:
+          type: string
+          format: date
+          description: date of birth in format "YYYY-MM-DD"
+          example: 2001-12-14
+        amount:
+          type: integer
+          description: Amount of credit
+          format: int64
+          example: 1000000
+        term:
+          type: integer
+          description: Term of credit
+          format: int32
+          example: 120
+        status:
+          type: string
+          enum:
+            - approved
+            - not approved
