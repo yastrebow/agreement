@@ -12,13 +12,18 @@
 	<artifactId>agreement</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>agreement</name>
-	<description>MSs 3 &amp; 4 of project &apos;conveyor&apos;</description>
+	<description>MS No3 of project &apos;conveyor&apos;</description>
 	<properties>
 		<java.version>11</java.version>
 		<org.mapstruct.version>1.5.1.Final</org.mapstruct.version>
 		<lombok-mapstruct-binding.version>0.2.0</lombok-mapstruct-binding.version>
 	</properties>
 	<dependencies>
+		<dependency>
+			<groupId>ru.yastrebov.areementStatisticsLib</groupId>
+			<artifactId>agreement-statistics-lib</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
+		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-web</artifactId>
@@ -43,7 +48,12 @@
 			<artifactId>lombok-mapstruct-binding</artifactId>
 			<version>${lombok-mapstruct-binding.version}</version>
 		</dependency>
-
+		<dependency>
+			<groupId>ru.yastrebov.areementStatisticsLib</groupId>
+			<artifactId>agreement-statistics-lib</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
+			<scope>compile</scope>
+		</dependency>
 		<dependency>
 			<groupId>org.apache.pdfbox</groupId>
 			<artifactId>pdfbox</artifactId>
@@ -68,7 +78,7 @@
 		<dependency>
 			<groupId>org.jetbrains</groupId>
 			<artifactId>annotations</artifactId>
-			<version>RELEASE</version>
+			<version>23.0.0</version>
 			<scope>compile</scope>
 		</dependency>
 

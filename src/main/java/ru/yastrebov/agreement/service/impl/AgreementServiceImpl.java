@@ -10,9 +10,11 @@ import org.apache.pdfbox.pdmodel.font.PDType0Font;
 import org.springframework.stereotype.Service;
 import ru.yastrebov.agreement.exception.handler.MethodNotAllowedException;
 import ru.yastrebov.agreement.kafka.KafkaProducer;
+import ru.yastrebov.agreement.mapstruct.AgreementMapper;
 import ru.yastrebov.agreement.mapstruct.ProcessedRequestMapper;
 import ru.yastrebov.agreement.model.ProcessedRequest;
 import ru.yastrebov.agreement.model.ProcessedRequestDTO;
+import ru.yastrebov.agreement.model.ResultToMongo;
 import ru.yastrebov.agreement.model.enums.Status;
 import ru.yastrebov.agreement.repository.ProcessedRequestRepository;
 import ru.yastrebov.agreement.service.AgreementService;
@@ -20,7 +22,8 @@ import ru.yastrebov.agreement.service.AgreementService;
 import javax.persistence.EntityNotFoundException;
 import java.io.File;
 import java.io.IOException;
-
+import java.time.ZonedDateTime;
+import java.time.LocalDateTime;
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -28,26 +31,51 @@ public class AgreementServiceImpl implements AgreementService {
 
     private final ProcessedRequestRepository processedRequestRepository;
     private final KafkaProducer kafkaProducer;
-
     private final ProcessedRequestMapper mapper;
 
-    @Override
-    public ProcessedRequestDTO getRequestById(Long id) throws MethodNotAllowedException {
-        log.debug("getRequestById started, id = {}", id);
-        ProcessedRequest requestForAgreement = processedRequestRepository.findById(id)
-                .orElseThrow(EntityNotFoundException::new);
+    private final AgreementMapper agreementMapper;
 
+    @Override
+    public ProcessedRequestDTO getRequestById(Long id) throws MethodNotAllowedException, EntityNotFoundException {
+
+        log.debug("getRequestById started, id = {}", id);
+
+        ProcessedRequest requestForAgreement = new ProcessedRequest();
+
+        try {
+            requestForAgreement = processedRequestRepository.findById(id)
+                    .orElseThrow(EntityNotFoundException::new);
+
+        } catch (EntityNotFoundException exception) {
+            AgreementStatistics badRequest = AgreementStatistics.builder()
+                    .id(id)
+                    .date(ZonedDateTime.from(LocalDateTime.now()))
+                    .status(ru.yastrebov.agreementStatisticsLib.model.enums.Status.NOT_FOUND)
+                    .build();
+            kafkaProducer.sendMessage(badRequest);
+            throw new EntityNotFoundException();
+        }
         if (requestForAgreement.getStatus().equals(Status.APPROVED)) {
             makeAgreement(requestForAgreement);
+            kafkaProducer.sendMessage(createMessageToMongo(requestForAgreement));
+
         } else if (requestForAgreement.getStatus().equals(Status.NOT_APPROVED)) {
+            kafkaProducer.sendMessage(createMessageToMongo(requestForAgreement));
             throw new MethodNotAllowedException();
         }
-
         ProcessedRequestDTO processedRequestDTO = mapper.entityToDto(requestForAgreement);
-        kafkaProducer.sendMessage(kafkaProducer.createMessageForSending(processedRequestDTO));
-        log.debug("getRequestById ended, request = {}", requestForAgreement);
-
+        log.debug("getRequestById ended, request = {}", createMessageToMongo(requestForAgreement));
         return processedRequestDTO;
+    }
+
+    public AgreementStatistics createMessageToMongo(ProcessedRequest processedRequest) {
+
+        return AgreementStatistics
+                .builder()
+                .id(processedRequest.getId())
+                .date(ZonedDateTime.from(LocalDateTime.now()))
+                .status(agreementMapper.requestToAgreement(processedRequest).getStatus())
+                .build();
     }
 
     public void makeAgreement(ProcessedRequest requestForAgreement) {
