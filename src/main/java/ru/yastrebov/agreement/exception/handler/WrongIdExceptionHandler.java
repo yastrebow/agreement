@@ -9,13 +9,13 @@ import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 @ControllerAdvice
-public class RequestNotApprovedExceptionHandler extends ResponseEntityExceptionHandler {
+public class WrongIdExceptionHandler extends ResponseEntityExceptionHandler {
 
-    @ExceptionHandler(MethodNotAllowedException.class)
+    @ExceptionHandler(EntityNotFoundException.class)
     protected ResponseEntity<Object> handleException(RuntimeException exception, WebRequest webRequest) {
 
-        String bodyOfResponse = "The request has status 'not approved'";
+        String bodyOfResponse = "Record with this Id is missing in DB!";
 
-        return handleExceptionInternal(exception, bodyOfResponse, new HttpHeaders(), HttpStatus.METHOD_NOT_ALLOWED, webRequest);
+        return handleExceptionInternal(exception, bodyOfResponse, new HttpHeaders(), HttpStatus.BAD_REQUEST, webRequest);
     }
 }
