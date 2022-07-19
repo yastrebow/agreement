@@ -18,7 +18,7 @@ public class KafkaProducer {
 
     private final KafkaTemplate<String, AgreementStatistics> kafkaTemplate;
 
-    public void sendMessage(@RequestBody AgreementStatistics message) {
+    public AgreementStatistics sendMessage(@RequestBody AgreementStatistics message) {
 
         ListenableFuture<SendResult<String, AgreementStatistics>> future = kafkaTemplate.send("agreement_statistics", message);
         future.addCallback(new ListenableFutureCallback<>() {
@@ -35,10 +35,5 @@ public class KafkaProducer {
             }
         });
         return message;
-    }
-
-    public ProcessedRequestDTO createMessageForSending(ProcessedRequestDTO processedRequestDTO) {
-
-        return processedRequestDTO;
     }
 }

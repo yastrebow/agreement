@@ -14,16 +14,16 @@ import ru.yastrebov.agreement.mapstruct.AgreementMapper;
 import ru.yastrebov.agreement.mapstruct.ProcessedRequestMapper;
 import ru.yastrebov.agreement.model.ProcessedRequest;
 import ru.yastrebov.agreement.model.ProcessedRequestDTO;
-import ru.yastrebov.agreement.model.ResultToMongo;
 import ru.yastrebov.agreement.model.enums.Status;
 import ru.yastrebov.agreement.repository.ProcessedRequestRepository;
 import ru.yastrebov.agreement.service.AgreementService;
+import ru.yastrebov.agreementStatisticsLib.model.AgreementStatistics;
 
 import javax.persistence.EntityNotFoundException;
 import java.io.File;
 import java.io.IOException;
 import java.time.ZonedDateTime;
-import java.time.LocalDateTime;
+
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -49,7 +49,7 @@ public class AgreementServiceImpl implements AgreementService {
         } catch (EntityNotFoundException exception) {
             AgreementStatistics badRequest = AgreementStatistics.builder()
                     .id(id)
-                    .date(ZonedDateTime.from(LocalDateTime.now()))
+                    .date(ZonedDateTime.now())
                     .status(ru.yastrebov.agreementStatisticsLib.model.enums.Status.NOT_FOUND)
                     .build();
             kafkaProducer.sendMessage(badRequest);
@@ -73,7 +73,7 @@ public class AgreementServiceImpl implements AgreementService {
         return AgreementStatistics
                 .builder()
                 .id(processedRequest.getId())
-                .date(ZonedDateTime.from(LocalDateTime.now()))
+                .date(ZonedDateTime.now())
                 .status(agreementMapper.requestToAgreement(processedRequest).getStatus())
                 .build();
     }
