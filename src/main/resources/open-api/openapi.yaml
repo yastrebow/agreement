@@ -71,3 +71,4 @@ components:
           enum:
             - approved
             - not approved
+            - not found
